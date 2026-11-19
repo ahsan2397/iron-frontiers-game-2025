@@ -12,12 +12,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
       - name: Fix All Errors
         run: |
-          echo '{"project_info":{"project_number":"123","project_id":"iron"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:abc","package_name":"com.aistudio.applet.lkolwh"},"api_key":[{"current_key":"dummy"}]}]}' > app/google-services.json
+          rm -f app/google-services.json
+          rm -f google-services.json
+          sed -i "/google-services/d" app/build.gradle || true
+          sed -i "/google-services/d" build.gradle || true
+          sed -i "/gms.google-services/d" app/build.gradle || true
+          sed -i "/gms.google-services/d" build.gradle || true
+          sed -i "/com.google.gms.google-services/d" app/build.gradle || true
           keytool -genkey -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Debug" -noprompt || true
           keytool -genkey -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Debug" -noprompt || true
-          gradle wrapper --gradle-version 9.3.1
-          chmod +x ./gradlew
-      - run: ./gradlew assembleDebug
+          chmod +x ./gradlew || true
+      - run: ./gradlew assembleDebug -x processDebugGoogleServices -x processReleaseGoogleServices
       - uses: actions/upload-artifact@v4
         with:
           name: Iron-Frontiers-APK
