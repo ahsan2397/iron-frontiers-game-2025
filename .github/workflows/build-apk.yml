@@ -15,14 +15,13 @@ jobs:
           rm -f app/google-services.json
           rm -f google-services.json
           sed -i "/google-services/d" app/build.gradle || true
-          sed -i "/google-services/d" build.gradle || true
           sed -i "/gms.google-services/d" app/build.gradle || true
-          sed -i "/gms.google-services/d" build.gradle || true
           sed -i "/com.google.gms.google-services/d" app/build.gradle || true
-          keytool -genkey -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Debug" -noprompt || true
-          keytool -genkey -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Debug" -noprompt || true
-          chmod +x ./gradlew || true
-      - run: ./gradlew assembleDebug -x processDebugGoogleServices -x processReleaseGoogleServices
+          sed -i "/google-services/d" build.gradle || true
+          find . -name "gradlew" -exec chmod +x {} \; || true
+          ls -la
+      - name: Build APK
+        run: gradle assembleDebug -x processDebugGoogleServices -x processReleaseGoogleServices --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: Iron-Frontiers-APK
