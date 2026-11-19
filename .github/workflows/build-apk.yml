@@ -1,41 +1,24 @@
 name: Build APK
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Fix Missing Files
+      - uses: gradle/actions/setup-gradle@v3
+      - name: Fix All Errors
         run: |
-          # 1. Create dummy google-services.json (Fix Firebase error)
-          echo '{"project_info":{"project_number":"123456","project_id":"iron-frontiers-dummy","storage_bucket":"dummy.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:dummy","package_name":"com.ironfrontiers.game"},"oauth_client":[],"api_key":[{"current_key":"dummy"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > app/google-services.json
-          
-          # 2. Create debug.keystore (Fix signing error)
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -noprompt
-          keytool -genkey -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -noprompt
-          
-          # 3. Force Gradle 9.3.1
-          chmod +x ./gradlew 2>/dev/null || true
+          echo '{"project_info":{"project_number":"123","project_id":"iron"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:abc","package_name":"com.aistudio.applet.lkolwh"},"api_key":[{"current_key":"dummy"}]}]}' > app/google-services.json
+          keytool -genkey -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Debug" -noprompt || true
+          keytool -genkey -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Debug" -noprompt || true
           gradle wrapper --gradle-version 9.3.1
-
-      - name: Build APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          chmod +x ./gradlew
+      - run: ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
         with:
           name: Iron-Frontiers-APK
           path: app/build/outputs/apk/debug/app-debug.apk
