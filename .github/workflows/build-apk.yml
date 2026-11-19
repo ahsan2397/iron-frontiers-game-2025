@@ -10,18 +10,22 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.10
       - name: Fix All Errors
         run: |
-          rm -f app/google-services.json
-          rm -f google-services.json
+          rm -f app/google-services.json google-services.json
           sed -i "/google-services/d" app/build.gradle || true
           sed -i "/gms.google-services/d" app/build.gradle || true
           sed -i "/com.google.gms.google-services/d" app/build.gradle || true
           sed -i "/google-services/d" build.gradle || true
-          find . -name "gradlew" -exec chmod +x {} \; || true
-          ls -la
+          mkdir -p app/src/main/res/values
+          echo '<resources><string name="default_web_client_id">dummy-client-id.apps.googleusercontent.com</string></resources>' > app/src/main/res/values/fix.xml
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -noprompt || true
+          cp debug.keystore app/debug.keystore || true
+          ls -la *.keystore app/*.keystore || true
       - name: Build APK
-        run: gradle assembleDebug -x processDebugGoogleServices -x processReleaseGoogleServices --stacktrace
+        run: gradle assembleDebug --no-configuration-cache -x processDebugGoogleServices -x processReleaseGoogleServices --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: Iron-Frontiers-APK
