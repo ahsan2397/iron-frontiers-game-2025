@@ -1,10 +1,8 @@
 name: Build APK
-
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,12 +18,21 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build APK with Gradle 9.3.1
+      - name: Fix Missing Files
         run: |
+          # 1. Create dummy google-services.json (Fix Firebase error)
+          echo '{"project_info":{"project_number":"123456","project_id":"iron-frontiers-dummy","storage_bucket":"dummy.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:dummy","package_name":"com.ironfrontiers.game"},"oauth_client":[],"api_key":[{"current_key":"dummy"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > app/google-services.json
+          
+          # 2. Create debug.keystore (Fix signing error)
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -noprompt
+          keytool -genkey -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -noprompt
+          
+          # 3. Force Gradle 9.3.1
           chmod +x ./gradlew 2>/dev/null || true
-          # Force Gradle 9.3.1 - Required for AGP 9.1.1
           gradle wrapper --gradle-version 9.3.1
-          ./gradlew assembleDebug
+
+      - name: Build APK
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
