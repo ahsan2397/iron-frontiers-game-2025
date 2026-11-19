@@ -1,0 +1,8 @@
+{
+  "name": "Remix Iron Frontiers",
+  "description": "Iron Frontiers — Rival Regions style geopolitical strategy game with dark #1e1e1e UI, pixel typography, Pakistan map, 60-seat Parliament, Party Wedge, Work, Storage, Wars, Articles, and Bot Chat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

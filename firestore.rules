@@ -1,0 +1,487 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    function isValidProfilePerks(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.commanderName is string && data.commanderName.size() >= 1 && data.commanderName.size() <= 60 &&
+             data.stateName is string && data.stateName.size() >= 0 && data.stateName.size() <= 60 &&
+             data.setupCompleted is bool &&
+             data.worldVersion is int && data.worldVersion >= 1 && data.worldVersion <= 100 &&
+             data.kingMode is bool &&
+             data.level is int && data.level >= 1 && data.level <= 1000 &&
+             data.xp is int && data.xp >= 0 &&
+             data.workExp is int && data.workExp >= 0 &&
+             data.strength is int && data.strength >= 1 && data.strength <= 100000 &&
+             data.strLevel is int && data.strLevel >= 1 && data.strLevel <= 1000 &&
+             data.education is int && data.education >= 1 && data.education <= 100000 &&
+             data.eduLevel is int && data.eduLevel >= 1 && data.eduLevel <= 1000 &&
+             data.endurance is int && data.endurance >= 1 && data.endurance <= 100000 &&
+             data.endLevel is int && data.endLevel >= 1 && data.endLevel <= 1000;
+    }
+
+    function isValidProfileIdentityAndRegion(data) {
+      return data.energy is int && data.energy >= 0 && data.energy <= 1000000 &&
+             data.maxEnergy is int && data.maxEnergy >= 100 && data.maxEnergy <= 1000000 &&
+             data.tickets is int && data.tickets >= 0 && data.tickets <= 1000000 &&
+             data.currentRegionId is string && data.currentRegionId.size() >= 1 && data.currentRegionId.size() <= 64 &&
+             data.birthRegionId is string && data.birthRegionId.size() >= 1 && data.birthRegionId.size() <= 64 &&
+             data.residencies is list && data.residencies.size() <= 50 &&
+             (data.residencies.size() == 0 || data.residencies[0] is string) &&
+             data.partyId is string && data.partyId.size() >= 1 && data.partyId.size() <= 64 &&
+             data.partyName is string && data.partyName.size() >= 1 && data.partyName.size() <= 60 &&
+             data.parliamentSeats is int && data.parliamentSeats >= 10 && data.parliamentSeats <= 200;
+    }
+
+    function isValidProfileResources(data) {
+      return data.medals is int && data.medals >= 0 &&
+             data.premiumActive is bool &&
+             data.money is int && data.money >= 0 &&
+             data.gold is int && data.gold >= 0 &&
+             data.wood is int && data.wood >= 0 &&
+             data.oil is int && data.oil >= 0 &&
+             data.ore is int && data.ore >= 0 &&
+             data.uranium is int && data.uranium >= 0 &&
+             data.diamonds is int && data.diamonds >= 0 &&
+             data.tanks is int && data.tanks >= 0 &&
+             data.bombers is int && data.bombers >= 0 &&
+             data.missiles is int && data.missiles >= 0 &&
+             data.energyDrinks is int && data.energyDrinks >= 0 &&
+             data.explorationUsed is int && data.explorationUsed >= 0 && data.explorationUsed <= 1500 &&
+             data.explorationLimit is int && data.explorationLimit >= 100 && data.explorationLimit <= 5000 &&
+             data.factoryLevel is int && data.factoryLevel >= 0 && data.factoryLevel <= 200 &&
+             data.factoryPayMoney is int && data.factoryPayMoney >= 0 &&
+             data.factoryPayGold is int && data.factoryPayGold >= 0 &&
+             data.factoryWorkCount is int && data.factoryWorkCount >= 0 &&
+             data.questProgressMask is int && data.questProgressMask >= 0 &&
+             data.autoWorkActive is bool &&
+             data.totalDamage is int && data.totalDamage >= 0 &&
+             data.warsWon is int && data.warsWon >= 0 &&
+             data.lawsPassed is int && data.lawsPassed >= 0;
+    }
+
+    function isValidCommanderProfile(data) {
+      return isValidProfilePerks(data) && isValidProfileIdentityAndRegion(data) && isValidProfileResources(data);
+    }
+
+    function isValidRegionMeta(data, regionId) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+             data.country is string && data.country.size() >= 1 && data.country.size() <= 60 &&
+             data.controller is string && data.controller.size() >= 1 && data.controller.size() <= 60 &&
+             data.parliamentTitle is string && data.parliamentTitle.size() >= 1 && data.parliamentTitle.size() <= 100 &&
+             data.conquerable is bool &&
+             data.autonomy is bool &&
+             (regionId != 'punjab' || data.conquerable == false) &&
+             data.regionLevel is int && data.regionLevel >= 1 && data.regionLevel <= 100 &&
+             data.population is int && data.population >= 0 &&
+             data.taxRate is int && data.taxRate >= 0 && data.taxRate <= 50 &&
+             data.hp is int && data.hp >= 0 &&
+             data.maxHp is int && data.maxHp >= 1 &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidRegionResourcesAndBuildings(data) {
+      return data.goldIndex is int && data.goldIndex >= 50 && data.goldIndex <= 250 &&
+             data.oilIndex is int && data.oilIndex >= 50 && data.oilIndex <= 250 &&
+             data.oreIndex is int && data.oreIndex >= 50 && data.oreIndex <= 200 &&
+             data.woodIndex is int && data.woodIndex >= 50 && data.woodIndex <= 250 &&
+             data.uraniumIndex is int && data.uraniumIndex >= 0 && data.uraniumIndex <= 1000 &&
+             data.diamondIndex is int && data.diamondIndex >= 0 && data.diamondIndex <= 1000 &&
+             data.defenseIndex is int && data.defenseIndex >= 0 && data.defenseIndex <= 500 &&
+             data.hospitalLevel is int && data.hospitalLevel >= 1 && data.hospitalLevel <= 100 &&
+             data.militaryBaseLevel is int && data.militaryBaseLevel >= 1 && data.militaryBaseLevel <= 100 &&
+             data.schoolLevel is int && data.schoolLevel >= 1 && data.schoolLevel <= 100 &&
+             data.powerPlantLevel is int && data.powerPlantLevel >= 1 && data.powerPlantLevel <= 100 &&
+             data.housingLevel is int && data.housingLevel >= 1 && data.housingLevel <= 100;
+    }
+
+    function isValidRegionState(data, regionId) {
+      return isValidRegionMeta(data, regionId) && isValidRegionResourcesAndBuildings(data);
+    }
+
+    function isValidPlayerFactory(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 60 &&
+             data.factoryType in ['GOLD_MINE', 'OIL_RIG', 'ORE_QUARRY', 'WOOD_MILL', 'URANIUM_PLANT', 'DIAMOND_WORKS'] &&
+             data.regionId is string && data.regionId.size() >= 1 && data.regionId.size() <= 64 &&
+             data.regionName is string && data.regionName.size() >= 1 && data.regionName.size() <= 80 &&
+             data.ownerName is string && data.ownerName.size() >= 1 && data.ownerName.size() <= 60 &&
+             data.level is int && data.level >= 1 && data.level <= 200 &&
+             data.foundedLabel is string && data.foundedLabel.size() >= 1 && data.foundedLabel.size() <= 40 &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidPartyState(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 60 &&
+             data.tag is string && data.tag.size() >= 2 && data.tag.size() <= 10 &&
+             data.colorHex is string && data.colorHex.size() >= 4 && data.colorHex.size() <= 12 &&
+             data.seats is int && data.seats >= 0 && data.seats <= 200 &&
+             data.membersCount is int && data.membersCount >= 0 && data.membersCount <= 60 &&
+             data.maxMembers is int && data.maxMembers >= 30 && data.maxMembers <= 60 &&
+             data.wedgeScore is int && data.wedgeScore >= 0 && data.wedgeScore <= 100000 &&
+             data.ideology is string && data.ideology.size() >= 2 && data.ideology.size() <= 80 &&
+             data.treasuryGold is int && data.treasuryGold >= 0 &&
+             data.userMember is bool &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidWarFront(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.targetRegionId is string && data.targetRegionId.size() >= 1 && data.targetRegionId.size() <= 64 &&
+             (data.targetRegionId != 'punjab' || data.warType == 'TRAINING') &&
+             data.targetRegionName is string && data.targetRegionName.size() >= 1 && data.targetRegionName.size() <= 80 &&
+             data.warType in ['WAR', 'REVOLUTION', 'COUP', 'TRAINING'] &&
+             data.attackerName is string && data.attackerName.size() >= 1 && data.attackerName.size() <= 60 &&
+             data.defenderName is string && data.defenderName.size() >= 1 && data.defenderName.size() <= 60 &&
+             data.attackerDamage is int && data.attackerDamage >= 0 &&
+             data.defenderDamage is int && data.defenderDamage >= 0 &&
+             data.membersCount is int && data.membersCount >= 1 &&
+             data.status in ['ACTIVE', 'VICTORY', 'REPELLED'] &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidParliamentLaw(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() >= 3 && data.title.size() <= 120 &&
+             data.category is string && data.category.size() >= 2 && data.category.size() <= 40 &&
+             data.proposerParty is string && data.proposerParty.size() >= 2 && data.proposerParty.size() <= 12 &&
+             data.targetSeatCount is int && data.targetSeatCount >= 0 && data.targetSeatCount <= 200 &&
+             data.yesVotes is int && data.yesVotes >= 0 && data.yesVotes <= 200 &&
+             data.noVotes is int && data.noVotes >= 0 && data.noVotes <= 200 &&
+             (data.yesVotes + data.noVotes) <= 200 &&
+             data.userVoted in ['NONE', 'YES', 'NO'] &&
+             data.status in ['VOTING', 'PASSED', 'REJECTED'] &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidArticlePost(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 60 &&
+             data.newspaper is string && data.newspaper.size() >= 1 && data.newspaper.size() <= 60 &&
+             data.title is string && data.title.size() >= 2 && data.title.size() <= 120 &&
+             data.body is string && data.body.size() >= 2 && data.body.size() <= 1000 &&
+             data.votes is int && data.votes >= -1000 && data.votes <= 100000 &&
+             data.botGenerated is bool &&
+             isValidTimestamp(data.createdAt);
+    }
+
+    function isValidChatMessage(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 60 &&
+             data.senderRole is string && data.senderRole.size() >= 1 && data.senderRole.size() <= 40 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 500 &&
+             data.botSender is bool &&
+             isValidTimestamp(data.createdAt);
+    }
+
+    function isValidGlobalChatMessage(data) {
+      return data.senderUid is string && data.senderUid == request.auth.uid &&
+             data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 60 &&
+             data.stateName is string && data.stateName.size() >= 1 && data.stateName.size() <= 60 &&
+             data.regionName is string && data.regionName.size() >= 1 && data.regionName.size() <= 80 &&
+             data.isOwner is bool &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 500 &&
+             isValidTimestamp(data.createdAt);
+    }
+
+    match /global_chat/{messageId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() &&
+                       isValidId(messageId) &&
+                       incoming().keys().hasAll([
+                         'senderUid', 'senderName', 'stateName', 'regionName', 'isOwner', 'message', 'createdAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'senderUid', 'senderName', 'stateName', 'regionName', 'isOwner', 'message', 'createdAt'
+                       ]) &&
+                       isValidGlobalChatMessage(incoming());
+      allow update, delete: if false;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'commanderName', 'stateName', 'setupCompleted', 'worldVersion', 'kingMode',
+                         'level', 'xp', 'workExp', 'medals', 'premiumActive', 'strength', 'strLevel', 'education', 'eduLevel',
+                         'endurance', 'endLevel', 'energy', 'maxEnergy', 'tickets',
+                         'currentRegionId', 'birthRegionId', 'residencies', 'partyId', 'partyName',
+                         'parliamentSeats', 'money', 'gold', 'wood', 'oil', 'ore', 'uranium', 'diamonds',
+                         'tanks', 'bombers', 'missiles',
+                         'energyDrinks', 'explorationUsed', 'explorationLimit', 'factoryLevel',
+                         'factoryPayMoney', 'factoryPayGold', 'factoryWorkCount', 'questProgressMask',
+                         'autoWorkActive', 'totalDamage', 'warsWon', 'lawsPassed', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'commanderName', 'stateName', 'setupCompleted', 'worldVersion', 'kingMode',
+                         'level', 'xp', 'workExp', 'medals', 'premiumActive', 'strength', 'strLevel', 'education', 'eduLevel',
+                         'endurance', 'endLevel', 'energy', 'maxEnergy', 'tickets',
+                         'currentRegionId', 'birthRegionId', 'residencies', 'partyId', 'partyName',
+                         'parliamentSeats', 'money', 'gold', 'wood', 'oil', 'ore', 'uranium', 'diamonds',
+                         'tanks', 'bombers', 'missiles',
+                         'energyDrinks', 'explorationUsed', 'explorationLimit', 'factoryLevel',
+                         'factoryPayMoney', 'factoryPayGold', 'factoryWorkCount', 'questProgressMask',
+                         'autoWorkActive', 'totalDamage', 'warsWon', 'lawsPassed', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidTimestamp(incoming().createdAt) &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       isValidCommanderProfile(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       isValidCommanderProfile(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'commanderName', 'stateName', 'setupCompleted', 'worldVersion', 'kingMode',
+                         'level', 'xp', 'workExp', 'medals', 'premiumActive', 'strength', 'strLevel', 'education', 'eduLevel',
+                         'endurance', 'endLevel', 'energy', 'maxEnergy', 'tickets',
+                         'currentRegionId', 'birthRegionId', 'residencies', 'partyId', 'partyName',
+                         'parliamentSeats', 'money', 'gold', 'wood', 'oil', 'ore', 'uranium', 'diamonds',
+                         'tanks', 'bombers', 'missiles',
+                         'energyDrinks', 'explorationUsed', 'explorationLimit', 'factoryLevel',
+                         'factoryPayMoney', 'factoryPayGold', 'factoryWorkCount', 'questProgressMask',
+                         'autoWorkActive', 'totalDamage', 'warsWon', 'lawsPassed', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /regions/{regionId} {
+        allow get: if isOwner(userId) && isValidId(regionId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(regionId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'name', 'country', 'controller', 'parliamentTitle',
+                           'conquerable', 'autonomy', 'regionLevel',
+                           'goldIndex', 'oilIndex', 'oreIndex', 'woodIndex', 'uraniumIndex', 'diamondIndex',
+                           'defenseIndex', 'hospitalLevel', 'militaryBaseLevel', 'schoolLevel',
+                           'powerPlantLevel', 'housingLevel', 'population', 'taxRate', 'hp', 'maxHp', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'name', 'country', 'controller', 'parliamentTitle',
+                           'conquerable', 'autonomy', 'regionLevel',
+                           'goldIndex', 'oilIndex', 'oreIndex', 'woodIndex', 'uraniumIndex', 'diamondIndex',
+                           'defenseIndex', 'hospitalLevel', 'militaryBaseLevel', 'schoolLevel',
+                           'powerPlantLevel', 'housingLevel', 'population', 'taxRate', 'hp', 'maxHp', 'updatedAt'
+                         ]) &&
+                         isValidRegionState(incoming(), regionId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(regionId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().conquerable == existing().conquerable &&
+                         isValidRegionState(incoming(), regionId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'controller', 'autonomy', 'parliamentTitle', 'regionLevel', 'goldIndex', 'oilIndex',
+                           'oreIndex', 'woodIndex', 'uraniumIndex', 'diamondIndex', 'defenseIndex',
+                           'hospitalLevel', 'militaryBaseLevel', 'schoolLevel', 'powerPlantLevel', 'housingLevel',
+                           'population', 'taxRate', 'hp', 'maxHp', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(regionId);
+      }
+
+      match /factories/{factoryId} {
+        allow get: if isOwner(userId) && isValidId(factoryId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(factoryId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'name', 'factoryType', 'regionId', 'regionName',
+                           'ownerName', 'level', 'foundedLabel', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'name', 'factoryType', 'regionId', 'regionName',
+                           'ownerName', 'level', 'foundedLabel', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidTimestamp(incoming().createdAt) &&
+                         isValidPlayerFactory(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(factoryId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().factoryType == existing().factoryType &&
+                         incoming().regionId == existing().regionId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidPlayerFactory(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'name', 'regionName', 'ownerName', 'level', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(factoryId);
+      }
+
+      match /parties/{partyId} {
+        allow get: if isOwner(userId) && isValidId(partyId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(partyId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'name', 'tag', 'colorHex', 'seats', 'membersCount',
+                           'maxMembers', 'wedgeScore', 'ideology', 'treasuryGold', 'userMember', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'name', 'tag', 'colorHex', 'seats', 'membersCount',
+                           'maxMembers', 'wedgeScore', 'ideology', 'treasuryGold', 'userMember', 'updatedAt'
+                         ]) &&
+                         isValidPartyState(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(partyId) &&
+                         incoming().userId == existing().userId &&
+                         isValidPartyState(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'name', 'tag', 'colorHex', 'seats', 'membersCount',
+                           'maxMembers', 'wedgeScore', 'ideology', 'treasuryGold', 'userMember', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(partyId);
+      }
+
+      match /wars/{warId} {
+        allow get: if isOwner(userId) && isValidId(warId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(warId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'targetRegionId', 'targetRegionName', 'warType', 'attackerName',
+                           'defenderName', 'attackerDamage', 'defenderDamage', 'membersCount', 'status',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'targetRegionId', 'targetRegionName', 'warType', 'attackerName',
+                           'defenderName', 'attackerDamage', 'defenderDamage', 'membersCount', 'status',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidTimestamp(incoming().createdAt) &&
+                         isValidWarFront(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(warId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         existing().status == 'ACTIVE' &&
+                         isValidWarFront(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'attackerDamage', 'defenderDamage', 'membersCount', 'status', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(warId);
+      }
+
+      match /laws/{lawId} {
+        allow get: if isOwner(userId) && isValidId(lawId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(lawId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'title', 'category', 'proposerParty', 'targetSeatCount',
+                           'yesVotes', 'noVotes', 'userVoted', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'title', 'category', 'proposerParty', 'targetSeatCount',
+                           'yesVotes', 'noVotes', 'userVoted', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidTimestamp(incoming().createdAt) &&
+                         isValidParliamentLaw(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(lawId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         existing().status == 'VOTING' &&
+                         isValidParliamentLaw(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'yesVotes', 'noVotes', 'userVoted', 'status', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(lawId);
+      }
+
+      match /articles/{articleId} {
+        allow get: if isOwner(userId) && isValidId(articleId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(articleId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'authorName', 'newspaper', 'title', 'body',
+                           'votes', 'botGenerated', 'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'authorName', 'newspaper', 'title', 'body',
+                           'votes', 'botGenerated', 'createdAt'
+                         ]) &&
+                         isValidArticlePost(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(articleId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidArticlePost(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['votes']);
+
+        allow delete: if isOwner(userId) && isValidId(articleId);
+      }
+
+      match /chats/{chatId} {
+        allow get: if isOwner(userId) && isValidId(chatId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(chatId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'senderName', 'senderRole', 'message', 'botSender', 'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'senderName', 'senderRole', 'message', 'botSender', 'createdAt'
+                         ]) &&
+                         isValidChatMessage(incoming());
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(chatId);
+      }
+    }
+  }
+}

@@ -1,0 +1,285 @@
+{
+  "entities": {
+    "CommanderProfile": {
+      "title": "CommanderProfile",
+      "description": "Clean Rival Regions commander profile with 40-country setup, 100E/5 Tickets clean start, Owner unlimited mode, and durable factory/perk progression.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "commanderName": { "type": "string" },
+        "stateName": { "type": "string" },
+        "setupCompleted": { "type": "boolean" },
+        "worldVersion": { "type": "integer" },
+        "kingMode": { "type": "boolean" },
+        "level": { "type": "integer" },
+        "xp": { "type": "integer" },
+        "workExp": { "type": "integer" },
+        "medals": { "type": "integer" },
+        "premiumActive": { "type": "boolean" },
+        "strength": { "type": "integer" },
+        "strLevel": { "type": "integer" },
+        "education": { "type": "integer" },
+        "eduLevel": { "type": "integer" },
+        "endurance": { "type": "integer" },
+        "endLevel": { "type": "integer" },
+        "energy": { "type": "integer" },
+        "maxEnergy": { "type": "integer" },
+        "tickets": { "type": "integer" },
+        "currentRegionId": { "type": "string" },
+        "birthRegionId": { "type": "string" },
+        "residencies": { "type": "array" },
+        "partyId": { "type": "string" },
+        "partyName": { "type": "string" },
+        "parliamentSeats": { "type": "integer" },
+        "money": { "type": "integer" },
+        "gold": { "type": "integer" },
+        "wood": { "type": "integer" },
+        "oil": { "type": "integer" },
+        "ore": { "type": "integer" },
+        "uranium": { "type": "integer" },
+        "diamonds": { "type": "integer" },
+        "tanks": { "type": "integer" },
+        "bombers": { "type": "integer" },
+        "missiles": { "type": "integer" },
+        "energyDrinks": { "type": "integer" },
+        "explorationUsed": { "type": "integer" },
+        "explorationLimit": { "type": "integer" },
+        "factoryLevel": { "type": "integer" },
+        "factoryPayMoney": { "type": "integer" },
+        "factoryPayGold": { "type": "integer" },
+        "factoryWorkCount": { "type": "integer" },
+        "questProgressMask": { "type": "integer" },
+        "autoWorkActive": { "type": "boolean" },
+        "totalDamage": { "type": "integer" },
+        "warsWon": { "type": "integer" },
+        "lawsPassed": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "commanderName", "stateName", "setupCompleted", "worldVersion", "kingMode",
+        "level", "xp", "workExp", "medals", "premiumActive",
+        "strength", "strLevel", "education", "eduLevel", "endurance", "endLevel",
+        "energy", "maxEnergy", "tickets", "currentRegionId", "birthRegionId", "residencies",
+        "partyId", "partyName", "parliamentSeats", "money", "gold", "wood", "oil", "ore", "uranium", "diamonds",
+        "tanks", "bombers", "missiles",
+        "energyDrinks", "explorationUsed", "explorationLimit",
+        "factoryLevel", "factoryPayMoney", "factoryPayGold", "factoryWorkCount", "questProgressMask",
+        "autoWorkActive", "totalDamage", "warsWon", "lawsPassed", "createdAt", "updatedAt"
+      ]
+    },
+    "RegionState": {
+      "title": "RegionState",
+      "description": "40 real countries world map region with Gold 50-250, Oil 50-250, Ore 50-200, Wood, clean Parliament, and upgradeable State Buildings.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "country": { "type": "string" },
+        "controller": { "type": "string" },
+        "parliamentTitle": { "type": "string" },
+        "conquerable": { "type": "boolean" },
+        "autonomy": { "type": "boolean" },
+        "regionLevel": { "type": "integer" },
+        "goldIndex": { "type": "integer" },
+        "oilIndex": { "type": "integer" },
+        "oreIndex": { "type": "integer" },
+        "woodIndex": { "type": "integer" },
+        "uraniumIndex": { "type": "integer" },
+        "diamondIndex": { "type": "integer" },
+        "defenseIndex": { "type": "integer" },
+        "hospitalLevel": { "type": "integer" },
+        "militaryBaseLevel": { "type": "integer" },
+        "schoolLevel": { "type": "integer" },
+        "powerPlantLevel": { "type": "integer" },
+        "housingLevel": { "type": "integer" },
+        "population": { "type": "integer" },
+        "taxRate": { "type": "integer" },
+        "hp": { "type": "integer" },
+        "maxHp": { "type": "integer" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "name", "country", "controller", "parliamentTitle", "conquerable", "autonomy",
+        "regionLevel", "goldIndex", "oilIndex", "oreIndex", "woodIndex", "uraniumIndex", "diamondIndex",
+        "defenseIndex", "hospitalLevel", "militaryBaseLevel", "schoolLevel", "powerPlantLevel", "housingLevel",
+        "population", "taxRate", "hp", "maxHp", "updatedAt"
+      ]
+    },
+    "PlayerFactory": {
+      "title": "PlayerFactory",
+      "description": "Custom mine or factory opened and upgraded by a player in any region.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "factoryType": {
+          "type": "string",
+          "enum": ["GOLD_MINE", "OIL_RIG", "ORE_QUARRY", "WOOD_MILL", "URANIUM_PLANT", "DIAMOND_WORKS"]
+        },
+        "regionId": { "type": "string" },
+        "regionName": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "level": { "type": "integer" },
+        "foundedLabel": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "name", "factoryType", "regionId", "regionName",
+        "ownerName", "level", "foundedLabel", "createdAt", "updatedAt"
+      ]
+    },
+    "PartyState": {
+      "title": "PartyState",
+      "description": "Political party (max 60, start 30, wedge = sum levels).",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "tag": { "type": "string" },
+        "colorHex": { "type": "string" },
+        "seats": { "type": "integer" },
+        "membersCount": { "type": "integer" },
+        "maxMembers": { "type": "integer" },
+        "wedgeScore": { "type": "integer" },
+        "ideology": { "type": "string" },
+        "treasuryGold": { "type": "integer" },
+        "userMember": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "name", "tag", "colorHex", "seats", "membersCount",
+        "maxMembers", "wedgeScore", "ideology", "treasuryGold", "userMember", "updatedAt"
+      ]
+    },
+    "WarFront": {
+      "title": "WarFront",
+      "description": "War front supporting War, Revolution, Coup, and Training.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "targetRegionId": { "type": "string" },
+        "targetRegionName": { "type": "string" },
+        "warType": { "type": "string", "enum": ["WAR", "REVOLUTION", "COUP", "TRAINING"] },
+        "attackerName": { "type": "string" },
+        "defenderName": { "type": "string" },
+        "attackerDamage": { "type": "integer" },
+        "defenderDamage": { "type": "integer" },
+        "membersCount": { "type": "integer" },
+        "status": { "type": "string", "enum": ["ACTIVE", "VICTORY", "REPELLED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "targetRegionId", "targetRegionName", "warType", "attackerName",
+        "defenderName", "attackerDamage", "defenderDamage", "membersCount", "status", "createdAt", "updatedAt"
+      ]
+    },
+    "ParliamentLaw": {
+      "title": "ParliamentLaw",
+      "description": "Parliament bill supporting dynamic seat count changes.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "proposerParty": { "type": "string" },
+        "targetSeatCount": { "type": "integer" },
+        "yesVotes": { "type": "integer" },
+        "noVotes": { "type": "integer" },
+        "userVoted": { "type": "string", "enum": ["NONE", "YES", "NO"] },
+        "status": { "type": "string", "enum": ["VOTING", "PASSED", "REJECTED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "title", "category", "proposerParty", "targetSeatCount",
+        "yesVotes", "noVotes", "userVoted", "status", "createdAt", "updatedAt"
+      ]
+    },
+    "ArticlePost": {
+      "title": "ArticlePost",
+      "description": "Newspaper article written by commander or bots.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "newspaper": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "votes": { "type": "integer" },
+        "botGenerated": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "authorName", "newspaper", "title", "body", "votes", "botGenerated", "createdAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "World bot chat message.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderRole": { "type": "string" },
+        "message": { "type": "string" },
+        "botSender": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "senderName", "senderRole", "message", "botSender", "createdAt"]
+    },
+    "GlobalChatMessage": {
+      "title": "GlobalChatMessage",
+      "description": "Shared global chat message.",
+      "type": "object",
+      "properties": {
+        "senderUid": { "type": "string" },
+        "senderName": { "type": "string" },
+        "stateName": { "type": "string" },
+        "regionName": { "type": "string" },
+        "isOwner": { "type": "boolean" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["senderUid", "senderName", "stateName", "regionName", "isOwner", "message", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/CommanderProfile" },
+      "description": "User commander profile."
+    },
+    "/users/{userId}/regions/{regionId}": {
+      "schema": { "$ref": "#/entities/RegionState" },
+      "description": "40 real countries world map regions."
+    },
+    "/users/{userId}/factories/{factoryId}": {
+      "schema": { "$ref": "#/entities/PlayerFactory" },
+      "description": "Player-created mines and factories per region."
+    },
+    "/users/{userId}/parties/{partyId}": {
+      "schema": { "$ref": "#/entities/PartyState" },
+      "description": "Political parties."
+    },
+    "/users/{userId}/wars/{warId}": {
+      "schema": { "$ref": "#/entities/WarFront" },
+      "description": "War fronts."
+    },
+    "/users/{userId}/laws/{lawId}": {
+      "schema": { "$ref": "#/entities/ParliamentLaw" },
+      "description": "Parliament bills."
+    },
+    "/users/{userId}/articles/{articleId}": {
+      "schema": { "$ref": "#/entities/ArticlePost" },
+      "description": "Press articles."
+    },
+    "/users/{userId}/chats/{chatId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "World chat."
+    },
+    "/global_chat/{messageId}": {
+      "schema": { "$ref": "#/entities/GlobalChatMessage" },
+      "description": "Global chat room."
+    }
+  }
+}
